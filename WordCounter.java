@@ -9,25 +9,26 @@ public class WordCounter {
         int wordCount = 0;
         boolean foundStopword = (stopword == null);
 
-        Pattern wordPattern = Pattern.compile ("[a-zA-Z0-9]+");
+        Pattern wordPattern = Pattern.compile ("[a-zA-Z0-9']+");
         Matcher matcher = wordPattern.matcher(text);
 
         while (matcher.find()) {
             String word = matcher.group();
             wordCount++;
-
             if (!foundStopword && word.equals(stopword)) {
                 foundStopword = true;
-                break;
+                if (wordCount >= 5) {
+                    break;
+                }
             }
-        }
-
-        if (!foundStopword && stopword != null) {
-            throw new InvalidStopwordException(stopword);
         }
 
         if (wordCount < 5) {
             throw new TooSmallText(wordCount);
+        }
+
+        if (!foundStopword && stopword != null) {
+            throw new InvalidStopwordException(stopword);
         }
 
         return wordCount;
@@ -47,6 +48,9 @@ public class WordCounter {
                 filename = input.nextLine();
                 file = new File (filename);
             }
+            catch (Exception e) {
+                System.out.println (e.toString());
+            }
         }
 
         String content = "";
@@ -58,8 +62,8 @@ public class WordCounter {
         if (content.trim().isEmpty()) {
             throw new EmptyFileException(filename);
         }
-
-        return new StringBuffer(content.trim());
+        String result = content.substring(0, content.length()-1);
+        return new StringBuffer(result);
     }
 
     public static void main (String[] args) {
@@ -71,7 +75,7 @@ public class WordCounter {
         while (option != 1 && option != 2) {
             System.out.println ("Choose: file (1) | text (2)");
             if (scanner.hasNextInt()) {
-                option = scanner.nextInt;
+                option = scanner.nextInt();
                 scanner.nextLine();
             }
             else {
@@ -85,12 +89,13 @@ public class WordCounter {
 
         try {
             if (option == 1) {
-                try {
+                if (args.length >= 1) {
                     text = processFile(args[0]);
                 }
-                catch (EmptyFileException e) {
-                    System.out.println (e);
-                    text = new StringBuffer("");
+                else {
+                    System.out.println ("Enter filename:");
+                    String filename = scanner.nextLine();
+                    text = processFile(filename);
                 }
             }
 
@@ -105,7 +110,7 @@ public class WordCounter {
                 System.out.println ("Found " + count + " words.");
             }
             catch (InvalidStopwordException e) {
-                System.out.println(e);
+                System.out.println(e.toString());
                 System.out.println ("Enter a stopword:");
                 stopword = scanner.nextLine();
 
@@ -114,15 +119,24 @@ public class WordCounter {
                     System.out.println("Found " + count + " words.");
                 }
                 catch (InvalidStopwordException f) {
-                    System.out.println (f);
+                    System.out.println (f.toString());
                 }
                 catch (TooSmallText f) {
-                    System.out.println (f);
+                    System.out.println (f.toString());
+                }
+                catch (Exception f) {
+                    System.out.println (f.toString());
                 }
             }
             catch (TooSmallText e) {
-                System.out.println (e);
+                System.out.println (e.toString());
             }
+            catch (Exception e) {
+                System.out.println (e.toString());
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e.toString());
         }
     }
 }
